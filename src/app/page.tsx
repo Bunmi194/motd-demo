@@ -1,95 +1,63 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
+import { useState, useEffect } from "react";
+import Motd from "./components/Motd";
 
-export default function Home() {
+type HomeType = {
+  focus: string;
+  motdExists: boolean;
+  setMotdExists: Function;
+};
+type APIData = {
+  status: string;
+  message: string;
+};
+let focus: string;
+
+const Home: React.FC<HomeType> = () => {
+  const [motdExists, setMotdExists] = useState(false);
+  const [focus, setFocus] = useState("");
+  const [currentTime, setCurrentTime] = useState(new Date());
+  let time;
+  useEffect(() => {
+    const updateTime = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000 * 60);
+    makeAPICall();
+    let minutes =
+      `${currentTime.getMinutes()}`.length == 1
+        ? `0${currentTime.getMinutes()}`
+        : `${currentTime.getMinutes()}`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    time = `${currentTime.getHours()}:${minutes}`;
+  });
+
+  const makeAPICall = async (): Promise<void> => {
+    const res = await fetch("http://localhost:3000/api/motd");
+    const result = await res.json();
+    if (result.message) {
+      setMotdExists(true);
+      setFocus(result.message);
+    }
+    return;
+  };
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <main>
+      <div>
+        <h1>{`${currentTime.getHours()}:${
+          currentTime.getMinutes().toString().length == 1
+            ? `0${currentTime.getMinutes()}`
+            : currentTime.getMinutes()
+        }`}</h1>
+        <p>Good evening, Mev-Rael.</p>
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      <Motd
+        Focus={focus}
+        motdExists={motdExists}
+        setMotdExists={setMotdExists}
+      />
     </main>
-  )
-}
+  );
+};
+
+export default Home;
